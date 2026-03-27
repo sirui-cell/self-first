@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Constants
 HEADERS = {
-    'X-API-KEY': '3lf3v70vfpxmujmcga2q56r5wh8g41oy'
+    'X-API-KEY': 'yourtoken'
 }
 API_URL = "https://servapi.dbotx.com/account/follow_trades"
 EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
