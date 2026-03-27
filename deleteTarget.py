@@ -24,7 +24,7 @@ ASSET_API_URL = "https://servapi.dbotx.com/account/wallet/assets?page={page}&siz
 FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
 
 # Telegram Bot details
-BOT_TOKEN = "7374997745:AAFkJ4LBr8zXRFbvfdrsUKlrl16Gpd5U3Ow"
+BOT_TOKEN = "yourToken"
 CHAT_ID = 7096464619
 
 def request_data(url, params=None, max_retries=3, retry_delay=2):
