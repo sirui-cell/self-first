@@ -7,6 +7,7 @@ import time
 import logging
 import json
 import config as c
+import botApi as bot
 
 # 配置日志
 logging.basicConfig(
@@ -73,7 +74,7 @@ def fetch_trades():
     time_limit = datetime.now() - timedelta(hours=24)
 
     while True:
-        data = c.request_data(c.API_URL, params=params)
+        data = bot.request_data(c.API_URL, params=params)
         if not data or not isinstance(data.get('res'), list):
             break
 
