@@ -133,7 +133,7 @@ def update_targetId(targetId, config_id, update_type='del'):
         'page': 0,
         'size': 20
     }
-    if config_id in ['mhrthc5e0334zt','mhrthcgr07qqnv']:
+    if config_id in c.Pardon:
         logging.info(f"免死 {config_id}。")
         return 0
         
