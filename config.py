@@ -22,6 +22,8 @@ FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
 BOT_TOKEN = "yourToken"
 CHAT_ID = 7096464619
 
+Pardon = ['mhrthc5e0334zt','mhrthcgr07qqnv']
+
 def request_data(url, params=None, max_retries=3, retry_delay=2):
     for attempt in range(max_retries):
         try:
