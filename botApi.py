@@ -6,6 +6,7 @@ import time
 import logging
 import json
 import os
+import config as c
 
 # 配置日志
 logging.basicConfig(
@@ -14,16 +15,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    'X-API-KEY': 'yourtoken'
-}
-
-BOT_TOKEN = "yourtoken"
-CHAT_ID = 7096464619
-
-EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
-FETCH_TRADES_URL = "https://api-bot-v1.dbotx.com/account/follow_trades"
-ASSET_API_URL = "https://servapi.dbotx.com/account/wallet/assets?page={page}&size=100&walletAddress={walletAddress}&chain=solana&sortBy=timestamp&minValueUsd"
 
 def request_data(url, params=None, data=None, method='GET', max_retries=3, retry_delay=7):
 
@@ -42,9 +33,9 @@ def request_data(url, params=None, data=None, method='GET', max_retries=3, retry
         try:
             method_upper = method.upper()
             if method_upper == 'GET':
-                response = requests.get(url, headers=HEADERS, params=params, timeout=10)
+                response = requests.get(url, headers=c.HEADERS, params=params, timeout=10)
             elif method_upper == 'POST':
-                response = requests.post(url, headers=HEADERS, params=params, json=data, timeout=10)
+                response = requests.post(url, headers=c.HEADERS, params=params, json=data, timeout=10)
             else:
                 logger.error(f"不支持的请求方法: {method}")
                 return {}
