@@ -6,6 +6,7 @@ from collections import defaultdict
 import time
 import logging
 import json
+import config as c
 
 # 配置日志
 logging.basicConfig(
@@ -14,34 +15,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Constants
-HEADERS = {
-    'X-API-KEY': 'yourtoken'
-}
-API_URL = "https://servapi.dbotx.com/account/follow_trades"
-EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
-ASSET_API_URL = "https://servapi.dbotx.com/account/wallet/assets?page={page}&size=100&walletAddress={walletAddress}&chain=solana&sortBy=timestamp&minValueUsd"
-FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
-
-# Telegram Bot details
-BOT_TOKEN = "yourToken"
-CHAT_ID = 7096464619
-
-def request_data(url, params=None, max_retries=3, retry_delay=2):
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(url, headers=HEADERS, params=params, timeout=10)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"请求失败（尝试 {attempt + 1}/{max_retries}）: {e}")
-            time.sleep(retry_delay)
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON 解析失败: {e}")
-            return {}
-    logger.error(f"请求失败，已达到最大重试次数: {url}")
-    return {}
-
 #获取指定wallet的全部资产信息
 def fetch_wallet_assets(wallet_address):
     """递增 page 参数，获取指定钱包的所有资产数据"""
@@ -49,10 +22,10 @@ def fetch_wallet_assets(wallet_address):
     page = 0  # 初始化页面编号
 
     while True:
-        url = ASSET_API_URL.format(page=page,walletAddress=wallet_address)
+        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
         
         try:
-            response = requests.get(url, headers=HEADERS)
+            response = requests.get(url, headers=c.HEADERS)
             response.raise_for_status()  # 检查请求是否成功
             data = response.json()  # 返回 JSON 数据
             
@@ -100,7 +73,7 @@ def fetch_trades():
     time_limit = datetime.now() - timedelta(hours=24)
 
     while True:
-        data = request_data(API_URL, params=params)
+        data = c.request_data(c.API_URL, params=params)
         if not data or not isinstance(data.get('res'), list):
             break
 
@@ -168,8 +141,8 @@ def update_targetId(targetId, config_id, update_type='del'):
         try:
             # 发送 GET 请求
             response = requests.get(
-                'https://api-bot-v1.dbotx.com/automation/follow_orders',
-                headers=HEADERS,
+                c.FOLLOW_ORDERS_API_URL,
+                headers=c.HEADERS,
                 params=params,
                 timeout=10  # 设置超时
             )
@@ -291,8 +264,8 @@ def get_disabled_buy_task_ids(wallet_address, configName, timeout=10):
     try:
         while True:
             response = requests.get(
-                'https://api-bot-v1.dbotx.com/automation/follow_orders',
-                headers=HEADERS,
+                c.FOLLOW_ORDERS_API_URL,
+                headers=c.HEADERS,
                 params=params,
                 timeout=timeout
             )
@@ -335,24 +308,6 @@ def get_disabled_buy_task_ids(wallet_address, configName, timeout=10):
         logger.error(f"未知错误: {e}")
         return 0
         
-def send_message_via_telegram(message):
-    """发送消息到Telegram群组"""
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    data = {
-        "chat_id": CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"  # 你可以选择'HTML'或'Markdown'
-    }
-    try:
-        response = requests.post(url, data=data)
-        response.raise_for_status()
-        print("Message sent successfully")
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-
-
 def main():
     data_list = fetch_trades()
     if not data_list:
@@ -377,11 +332,11 @@ def main():
                 if del_message:
                     if "成功" in del_message:
                         print(loss_message + del_message)
-                        send_message_via_telegram(loss_message + del_message)                        
+                        c.send_message_via_telegram(loss_message + del_message)                        
                 else:
                     configName = item['configName']
                     del_fail = loss_message + f"从{configName} 删除 {follow_wallet} 失败，请检查原因!"
-                    send_message_via_telegram(del_fail)
+                    c.send_message_via_telegram(del_fail)
                     print(del_fail)
                 
                 disabled_id = get_disabled_buy_task_ids(my_wallet,item['configName'])
@@ -390,13 +345,13 @@ def main():
                     if add_message:
                         if "成功" in add_message:
                             print(loss_message + add_message)
-                            send_message_via_telegram(loss_message + add_message)                    
+                            c.send_message_via_telegram(loss_message + add_message)                    
                     else:                    
                         configName = item['configName']
                         add_fail = loss_message + f"向{configName} 添加 {follow_wallet} 失败，请检查原因!"
-                        send_message_via_telegram(add_fail)
+                        c.send_message_via_telegram(add_fail)
                 else:
                     notid_message = loss_message +f"未找到只跟卖的任务配置，添加 {follow_wallet} 只跟卖失败，请检查原因!"
-                    send_message_via_telegram(notid_message)
+                    c.send_message_via_telegram(notid_message)
 if __name__ == "__main__":
     main()
