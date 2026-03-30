@@ -15,10 +15,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 HEADERS = {
-    'X-API-KEY': 'owpcqsm29t97tmzzs76hvsff362nj8jg'
+    'X-API-KEY': 'yourtoken'
 }
 
-BOT_TOKEN = "7374997745:AAFkJ4LBr8zXRFbvfdrsUKlrl16Gpd5U3Ow"
+BOT_TOKEN = "yourtoken"
 CHAT_ID = 7096464619
 
 EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
