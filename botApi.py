@@ -54,24 +54,7 @@ def request_data(url, params=None, data=None, method='GET', max_retries=3, retry
                 time.sleep(retry_delay)
             else:
                 logger.error(f"请求失败，已达到最大重试次数: {url}")
-                return {}
-
-def send_message_via_telegram(message):
-    """发送消息到Telegram群组"""
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    data = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"  # 你可以选择'HTML'或'Markdown'
-    }
-    try:
-        response = requests.post(url, data=data)
-        response.raise_for_status()
-        print("Message sent successfully")
-    except requests.exceptions.HTTPError as err:
-        print(f"HTTP error occurred: {err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")               
+                return {}           
 
 #获取指定wallet的全部资产信息
 def fetch_wallet_assets(wallet_address):
@@ -80,10 +63,10 @@ def fetch_wallet_assets(wallet_address):
     page = 0  # 初始化页面编号
 
     while True:
-        url = ASSET_API_URL.format(page=page,walletAddress=wallet_address)
+        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
         
         try:
-            response = requests.get(url, headers=HEADERS)
+            response = requests.get(url, headers=c.HEADERS)
             response.raise_for_status()  # 检查请求是否成功
             data = response.json()  # 返回 JSON 数据
             
@@ -138,8 +121,8 @@ def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
             try:
                 logging.info(f"Fetching page {params['page']} with {params['size']} items per page.")
                 response = requests.get(
-                    FETCH_TRADES_URL,
-                    headers=HEADERS,
+                    c.FETCH_TRADES_URL,
+                    headers=c.HEADERS,
                     params=params,
                     timeout=10  # 10秒超时
                 )
