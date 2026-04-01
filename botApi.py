@@ -61,15 +61,11 @@ def fetch_wallet_assets(wallet_address):
     """递增 page 参数，获取指定钱包的所有资产数据"""
     all_assets = []  # 存储所有资产
     page = 0  # 初始化页面编号
-
     while True:
-        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
-        
+        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)        
         try:
-            response = requests.get(url, headers=c.HEADERS)
-            response.raise_for_status()  # 检查请求是否成功
-            data = response.json()  # 返回 JSON 数据
-            
+            response = request_data(url)
+            data = response.json()  # 返回 JSON 数据            
             # 检查是否有资产数据
             if data and "res" in data and data["res"]:
                 all_assets.extend(data["res"])  # 添加当前页的资产数据
@@ -77,16 +73,13 @@ def fetch_wallet_assets(wallet_address):
                 time.sleep(5)
             else:
                 break  # 如果没有资产，退出循环
-
         except requests.RequestException as e:
             print(f"请求失败: {e}")
             time.sleep(2)
-
     return all_assets  # 返回所有资产数据
 
 #Fetch trades from the API and filter by the last `time_limit` minutes.
 def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
-
     """
     Fetch trades from the API and filter by the last `time_limit` minutes.
     Enhanced with robust error handling, retries, and logging.
@@ -95,7 +88,6 @@ def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
         time_limit (int): Time window in minutes to filter trades (default: 30).
         max_retries (int): Maximum number of retries per request (default: 3).
         max_pages (int): Maximum number of pages to fetch (default: 100).
-    
     Returns:
         list: List of filtered trades or empty list on critical failure.
     """
@@ -104,17 +96,14 @@ def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
         'page': 0,
         'size': 100
     }
-
     # 计算时间阈值（毫秒级）
     thirty_minutes_ago = datetime.now() - timedelta(minutes=time_limit)
     thirty_minutes_ago_timestamp_ms = int(thirty_minutes_ago.timestamp() * 1000)
-
     while True:
         # 防止分页超出限制
         if max_pages is not None and params['page'] >= max_pages:
             logging.warning(f"Reached maximum page limit of {max_pages}.")
             break
-
         # 请求重试机制
         response = None
         for attempt in range(max_retries):
@@ -133,24 +122,20 @@ def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
                 if attempt == max_retries - 1:
                     logging.critical("Max retries exceeded. Aborting fetch.")
                     return trades if trades else []
-
         # 解析 JSON 响应
         try:
             data = response.json()
         except ValueError as e:
             logging.error(f"Failed to parse JSON response: {e}")
             return trades if trades else []
-
         # 验证响应结构
         trade_records = data.get('res')
         if not isinstance(trade_records, list):
             logging.error(f"Unexpected response structure: missing or invalid 'res' field. Data: {data}")
             return trades if trades else []
-
         if not trade_records:
             logging.info("No more trade records returned. Ending fetch.")
             break
-
         # 过滤交易记录
         filtered_trades = []
         for trade in trade_records:
@@ -163,22 +148,17 @@ def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
             except (ValueError, TypeError):
                 logging.warning(f"Invalid 'createAt' value: {create_at}. Skipping.")
                 continue
-
             if create_at_ms >= thirty_minutes_ago_timestamp_ms:
                 filtered_trades.append(trade)
-
         if not filtered_trades:
             logging.info("No trades found within the time limit in current page. Ending fetch.")
             break
-
         trades.extend(filtered_trades)
         params['page'] += 1
-
     return trades
     
 #从指定任务中添加或删除 targetId。
-def update_task_by_targetId(targetId, config_id, update_type='del'):
-
+def update_targetId(targetId, config_id, update_type='del'):
     """
     从指定配置中添加或删除 targetId。
     
@@ -195,15 +175,27 @@ def update_task_by_targetId(targetId, config_id, update_type='del'):
         'page': 0,
         'size': 20
     }
-
+    if config_id in c.Pardon:
+        logging.info(f"免死 {config_id}。")
+        return 0
+        
     while True:
-
-        response = request_data(
-                url='https://api-bot-v1.dbotx.com/automation/follow_orders',
+        try:
+            # 发送 GET 请求
+            response = requests.get(
+                c.FOLLOW_ORDERS_API_URL,
+                headers=c.HEADERS,
                 params=params,
-                method="GET"
+                timeout=10  # 设置超时
             )
-        data = response
+            response.raise_for_status()  # 抛出 HTTP 错误
+            data = response.json()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"GET 请求失败: {e}")
+            return 0
+        except ValueError as e:
+            logging.error(f"JSON 解析失败: {e}")
+            return 0
 
         # 获取响应中的数据列表
         tmp = data.get('res', [])
@@ -295,6 +287,7 @@ def update_task_by_targetId(targetId, config_id, update_type='del'):
 
         # 继续下一页
         params['page'] += 1
+        time.sleep(1)
 
     # 所有页面遍历完成，未找到 config_id
     logging.info(f"未找到配置 ID {config_id}。")
