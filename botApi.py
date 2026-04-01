@@ -257,7 +257,7 @@ def update_targetId(targetId, config_id, update_type='del'):
                     if modified:
                         try:
                             post_response = requests.post(
-                                EDIT_FOLLOW_ORDER_URL,
+                                c.EDIT_FOLLOW_ORDER_URL,
                                 headers=HEADERS,
                                 json=a,
                                 timeout=10
