@@ -308,7 +308,7 @@ def add_targetId(targetId):
     found = False
     while True:       
         response = request_data(
-                url='https://api-bot-v1.dbotx.com/automation/follow_orders',
+                url=c.FOLLOW_ORDERS_API_URL,
                 params=params,
                 method="GET"
             )
@@ -368,7 +368,7 @@ def get_task_by_configid(configid):
 
     while True:       
         response = request_data(
-                url='https://api-bot-v1.dbotx.com/automation/follow_orders',
+                url=c.FOLLOW_ORDERS_API_URL,
                 params=params,
                 method="GET"
             )
