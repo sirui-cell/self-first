@@ -56,7 +56,7 @@ def remove_duplicate_targetIds(task_dict):
             for task_id in duplicates:
                 if target in task_dict[task_id]:
                     task_dict[task_id].remove(target)
-                    bot.update_task_by_targetId(target, task_id, update_type='del')
+                    bot.update_targetId(target, task_id, update_type='del')
 
     return task_dict
 
