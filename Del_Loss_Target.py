@@ -100,12 +100,12 @@ def main():
     # 遍历每个 myWallet
     for my_wallet, items in grouped_data.items():
         # 遍历该 myWallet 下的每个 followWallet 数据项
-        token_info_list =  extract_token_info(fetch_wallet_assets(my_wallet))
+        token_info_list =  extract_token_info(bot.fetch_wallet_assets(my_wallet))
         for item in items:
             follow_wallet = item['followWallet']
             tokens = item['tokens']
             total_pnl = sum(token_info_list.get(token, 0) for token in tokens)
-            if total_pnl < -2:#删除亏损钱包，添加到只跟卖任务中
+            if total_pnl < c.sumLoss:#删除亏损钱包，添加到只跟卖任务中
                 print(tokens)
                 loss_message = f"24小时内亏损 {total_pnl:.2f} sol! "
                 del_message = bot.update_targetId(follow_wallet, item['configId'],update_type='del')
