@@ -16,34 +16,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-#获取指定wallet的全部资产信息
-def fetch_wallet_assets(wallet_address):
-    """递增 page 参数，获取指定钱包的所有资产数据"""
-    all_assets = []  # 存储所有资产
-    page = 0  # 初始化页面编号
-
-    while True:
-        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
-        
-        try:
-            response = requests.get(url, headers=c.HEADERS)
-            response.raise_for_status()  # 检查请求是否成功
-            data = response.json()  # 返回 JSON 数据
-            
-            # 检查是否有资产数据
-            if data and "res" in data and data["res"]:
-                all_assets.extend(data["res"])  # 添加当前页的资产数据
-                page += 1  # 递增页面编号
-                time.sleep(1)
-            else:
-                break  # 如果没有资产，退出循环
-
-        except requests.RequestException as e:
-            print(f"请求失败: {e}")
-            time.sleep(2)
-
-    return all_assets  # 返回所有资产数据
-
 #将资产信息整理为字典格式：{token:pnl}
 def extract_token_info(assets):
     token_info = {}
@@ -115,199 +87,6 @@ def filter_and_aggregate_trades(trade_records, trades_info):
             trades_info[config_id][target_wallet]['tokens'].add(token)
             trades_info[config_id][target_wallet]['configName'] = trade.get("configName", "")
             trades_info[config_id][target_wallet]['myWallet'] = trade.get("wallet", "")
-
-#根据更新类型，更新指定id的任务
-def update_targetId(targetId, config_id, update_type='del'):
-    """
-    从指定配置中添加或删除 targetId。
-    
-    参数:
-        targetId (str): 要添加或删除的目标 ID。
-        config_id (str): 要操作的配置 ID。
-        update_type (str): 'del' 或 'add'，表示删除或添加操作。
-    
-    返回:
-        str: 成功消息或错误信息。
-        int: 0 表示操作失败。
-    """
-    params = {
-        'page': 0,
-        'size': 20
-    }
-    if config_id in c.Pardon:
-        logging.info(f"免死 {config_id}。")
-        return 0
-        
-    while True:
-        try:
-            # 发送 GET 请求
-            response = requests.get(
-                c.FOLLOW_ORDERS_API_URL,
-                headers=c.HEADERS,
-                params=params,
-                timeout=10  # 设置超时
-            )
-            response.raise_for_status()  # 抛出 HTTP 错误
-            data = response.json()
-        except requests.exceptions.RequestException as e:
-            logging.error(f"GET 请求失败: {e}")
-            return 0
-        except ValueError as e:
-            logging.error(f"JSON 解析失败: {e}")
-            return 0
-
-        # 获取响应中的数据列表
-        tmp = data.get('res', [])
-        if not isinstance(tmp, list):
-            logging.error("API 返回的 'res' 字段不是列表")
-            return 0
-
-        if not tmp:
-            # 没有更多数据，退出循环
-            logging.info("没有更多数据，退出循环")
-            break
-
-        for a in tmp:
-            if not isinstance(a, dict):
-                logging.warning("发现非字典条目，跳过")
-                continue
-
-            current_id = a.get('id')
-            if current_id == config_id:
-                # 找到目标配置
-                try:
-                    # 获取 targetIds 列表
-                    target_ids = a.get('targetIds', [])
-                    if not isinstance(target_ids, list):
-                        logging.error(f"配置 {config_id} 的 targetIds 不是列表")
-                        return 0
-
-                    # 判断是否需要修改
-                    modified = False
-                    if update_type == 'del':
-                        if targetId in target_ids:
-                            target_ids.remove(targetId)
-                            modified = True
-                        else:
-                            name = a.get('name', '未知名称')
-                            message = f"Target ID {targetId} 不存在于 {name}，无需删除"
-                            logging.info(message)
-                            return message
-                    elif update_type == 'add':
-                        if targetId not in target_ids:
-                            target_ids.append(targetId)
-                            modified = True
-                        else:
-                            name = a.get('name', '未知名称')
-                            message = f"Target ID {targetId} 已存在于 {name}，无需添加"
-                            logging.info(message)
-                            return message
-                    else:
-                        logging.error(f"未知的 update_type: {update_type}")
-                        return 0
-
-                    # 如果需要修改，发送 POST 请求
-                    if modified:
-                        try:
-                            post_response = requests.post(
-                                EDIT_FOLLOW_ORDER_URL,
-                                headers=HEADERS,
-                                json=a,
-                                timeout=10
-                            )
-                            post_response.raise_for_status()
-                            post_data = post_response.json()
-                        except requests.exceptions.RequestException as e:
-                            logging.error(f"POST 请求失败: {e}")
-                            return 0
-                        except ValueError as e:
-                            logging.error(f"POST 响应 JSON 解析失败: {e}")
-                            return 0
-
-                        if post_data.get('err'):
-                            error_msg = post_data.get('msg', '未知错误')
-                            logging.error(f"服务器返回错误: {error_msg}")
-                            return 0
-
-                        name = a.get('name', '未知名称')
-                        if update_type == 'del':
-                            message = f"成功从 {name} 删除 {targetId}！"
-                        else:
-                            message = f"成功向 {name} 添加 {targetId}！"
-                        logging.info(message)
-                        return message
-
-                    # 如果未修改，已返回成功信息
-                    return 0
-
-                except Exception as inner_e:
-                    logging.error(f"处理配置 {config_id} 时发生异常: {inner_e}")
-                    return 0
-
-        # 继续下一页
-        params['page'] += 1
-        time.sleep(1)
-
-    # 所有页面遍历完成，未找到 config_id
-    logging.info(f"未找到配置 ID {config_id}。")
-    return 0
-
-#获取指定wallet配置段只跟卖的任务id
-def get_disabled_buy_task_ids(wallet_address, configName, timeout=10):
-    """
-    根据指定的 wallet address，返回 buySettings.enabled 为 False 的任务的 id 列表。
-
-    """
-    params = {
-        'page': 0,
-        'size': 20
-    }
-    try:
-        while True:
-            response = requests.get(
-                c.FOLLOW_ORDERS_API_URL,
-                headers=c.HEADERS,
-                params=params,
-                timeout=timeout
-            )
-            response.raise_for_status()
-            data = response.json()
-            res = data.get('res', [])
-            if not isinstance(res, list):
-                logger.error("API 返回数据结构异常，'res' 不是列表。")
-                break
-
-            if not res:
-                break  # 没有更多数据
-
-            for item in res:
-                if not isinstance(item, dict):
-                    continue  # 跳过无效数据
-
-                wa = item.get('walletAddress')
-                buy_settings = item.get('buySettings', {})
-
-                if not isinstance(buy_settings, dict):
-                    continue  # buySettings 不是字典，跳过
-
-                enabled = buy_settings.get('enabled')
-
-                if wa == wallet_address and enabled is False:
-                    return item.get('id')
-
-
-            params['page'] += 1
-            time.sleep(1)
-
-    except requests.exceptions.RequestException as e:
-        logger.error(f"网络请求失败: {e}")
-        return 0
-    except ValueError as e:
-        logger.error(f"JSON 解析失败: {e}")
-        return 0
-    except Exception as e:
-        logger.error(f"未知错误: {e}")
-        return 0
         
 def main():
     data_list = fetch_trades()
@@ -329,7 +108,7 @@ def main():
             if total_pnl < -2:#删除亏损钱包，添加到只跟卖任务中
                 print(tokens)
                 loss_message = f"24小时内亏损 {total_pnl:.2f} sol! "
-                del_message = update_targetId(follow_wallet, item['configId'],update_type='del')
+                del_message = bot.update_targetId(follow_wallet, item['configId'],update_type='del')
                 if del_message:
                     if "成功" in del_message:
                         print(loss_message + del_message)
@@ -340,9 +119,9 @@ def main():
                     c.send_message_via_telegram(del_fail)
                     print(del_fail)
                 
-                disabled_id = get_disabled_buy_task_ids(my_wallet,item['configName'])
+                disabled_id = bot.get_disabled_buy_task_ids(my_wallet,item['configName'])
                 if disabled_id:
-                    add_message = update_targetId(follow_wallet,disabled_id,update_type='add')
+                    add_message = bot.update_targetId(follow_wallet,disabled_id,update_type='add')
                     if add_message:
                         if "成功" in add_message:
                             print(loss_message + add_message)
