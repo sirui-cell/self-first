@@ -74,7 +74,7 @@ def fetch_trades():
     time_limit = datetime.now() - timedelta(hours=24)
 
     while True:
-        data = bot.request_data(c.API_URL, params=params)
+        data = bot.request_data(c.FETCH_TRADES_URL, params=params)
         if not data or not isinstance(data.get('res'), list):
             break
 
