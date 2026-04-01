@@ -20,6 +20,7 @@ FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
 wallets_URL = "https://api-bot-v1.dbotx.com/account/wallets"
 SWAP_URL = "https://api-bot-v1.dbotx.com/automation/swap_order"
 
+#set params
 sumLoss = -2
 fast_pairs_count = 2
 holdtimes = 5*60
