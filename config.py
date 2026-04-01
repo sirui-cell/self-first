@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 HEADERS = {
     'X-API-KEY': 'yourtoken'
 }
-API_URL = "https://servapi.dbotx.com/account/follow_trades"
+FETCH_TRADES_URL = "https://servapi.dbotx.com/account/follow_trades"
 EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
 ASSET_API_URL = "https://servapi.dbotx.com/account/wallet/assets?page={page}&size=100&walletAddress={walletAddress}&chain=solana&sortBy=timestamp&minValueUsd"
 FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
