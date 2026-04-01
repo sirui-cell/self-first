@@ -8,18 +8,6 @@ import botApi as bot
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-# API URLS
-FETCH_TRADES_URL = "https://api-bot-v1.dbotx.com/account/follow_trades"
-EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
-
-# Telegram Bot API
-TELEGRAM_BOT_TOKEN = 'yourtoken'
-TELEGRAM_CHAT_ID = 7096464619
-
-# API headers
-HEADERS = {
-    'X-API-KEY': 'yourtoken'
-}
 
 def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
     """
