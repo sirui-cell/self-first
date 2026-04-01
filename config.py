@@ -18,6 +18,7 @@ EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
 ASSET_API_URL = "https://servapi.dbotx.com/account/wallet/assets?page={page}&size=100&walletAddress={walletAddress}&chain=solana&sortBy=timestamp&minValueUsd"
 FOLLOW_ORDERS_API_URL = "https://api-bot-v1.dbotx.com/automation/follow_orders"
 wallets_URL = "https://api-bot-v1.dbotx.com/account/wallets"
+SWAP_URL = "https://api-bot-v1.dbotx.com/automation/swap_order"
 
 # Telegram Bot details
 BOT_TOKEN = "yourToken"
