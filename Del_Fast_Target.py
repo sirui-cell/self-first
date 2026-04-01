@@ -13,12 +13,12 @@ FETCH_TRADES_URL = "https://api-bot-v1.dbotx.com/account/follow_trades"
 EDIT_FOLLOW_ORDER_URL = "https://api-bot-v1.dbotx.com/automation/follow_order"
 
 # Telegram Bot API
-TELEGRAM_BOT_TOKEN = '7374997745:AAFXAnbB_MOJ6rHCofvL6yghbdbrRjhJqNU'
+TELEGRAM_BOT_TOKEN = 'yourtoken'
 TELEGRAM_CHAT_ID = 7096464619
 
 # API headers
 HEADERS = {
-    'X-API-KEY': 'swvtbhxlbmr6p92rbdytnju8jxea4cll'
+    'X-API-KEY': 'yourtoken'
 }
 
 def fetch_trades(time_limit=30, max_retries=3, max_pages=1000):
