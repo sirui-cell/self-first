@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import time
 import logging
 import botApi as bot
+import config as c
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
