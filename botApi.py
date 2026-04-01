@@ -61,21 +61,27 @@ def fetch_wallet_assets(wallet_address):
     """递增 page 参数，获取指定钱包的所有资产数据"""
     all_assets = []  # 存储所有资产
     page = 0  # 初始化页面编号
+
     while True:
-        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)        
+        url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
+        
         try:
-            response = request_data(url)
-            data = response.json()  # 返回 JSON 数据            
+            response = requests.get(url, c.headers=HEADERS)
+            response.raise_for_status()  # 检查请求是否成功
+            data = response.json()  # 返回 JSON 数据
+            
             # 检查是否有资产数据
             if data and "res" in data and data["res"]:
                 all_assets.extend(data["res"])  # 添加当前页的资产数据
                 page += 1  # 递增页面编号
-                time.sleep(5)
+                time.sleep(1)
             else:
                 break  # 如果没有资产，退出循环
+
         except requests.RequestException as e:
             print(f"请求失败: {e}")
             time.sleep(2)
+
     return all_assets  # 返回所有资产数据
 
 #Fetch trades from the API and filter by the last `time_limit` minutes.
