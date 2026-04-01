@@ -514,7 +514,7 @@ def find_fast_traders(trade_data):
 
                 if sell_time < buy_time:
                     j += 1
-                elif sell_time - buy_time <= 5 * 60:#设定快进快出标准
+                elif sell_time - buy_time <= c.holdtimes:#设定快进快出标准
                     found = True
                     break
                 else:
@@ -523,7 +523,7 @@ def find_fast_traders(trade_data):
             if found:
                 fast_pairs += 1
 
-        if fast_pairs >= 2:
+        if fast_pairs >= c.fast_pairs_count:
             result.append({
                 "copy wallet address": copy_wallet,
                 "configId": config_id,
