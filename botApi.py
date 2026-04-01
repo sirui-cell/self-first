@@ -719,6 +719,57 @@ def read_file(file_path):
         print(f"错误: 读取文件失败 - {e}")
         return []
 
+def getNameByConfigid(configid):
+    params = {
+        'page': 0,
+        'size': 20
+        }
+
+    while True:
+        try:
+            # 发送 GET 请求
+            response = request_data(
+                    url=c.FOLLOW_ORDERS_API_URL,
+                    params=params,
+                    method="GET"
+                )
+            data = response.json()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"GET 请求失败: {e}")
+            return 0
+        except ValueError as e:
+            logging.error(f"JSON 解析失败: {e}")
+            return 0
+
+        # 获取响应中的数据列表
+        tmp = data.get('res', [])
+        if not isinstance(tmp, list):
+            logging.error("API 返回的 'res' 字段不是列表")
+            return 0
+
+        if not tmp:
+            # 没有更多数据，退出循环
+            logging.info("没有更多数据，退出循环")
+            break
+
+        for a in tmp:
+            if not isinstance(a, dict):
+                logging.warning("发现非字典条目，跳过")
+                continue
+
+            current_id = a.get('id')
+            if current_id == configid:
+                # 找到目标配置
+                current_name = a.get('name')
+                return current_name
+        # 继续下一页
+        params['page'] += 1
+        time.sleep(1)
+
+    # 所有页面遍历完成，未找到 config_id
+    logging.info(f"未找到配置 ID {configid}。")
+    return 0  
+
 def createTask():
     pass
 
