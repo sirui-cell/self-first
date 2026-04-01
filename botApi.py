@@ -66,7 +66,7 @@ def fetch_wallet_assets(wallet_address):
         url = c.ASSET_API_URL.format(page=page,walletAddress=wallet_address)
         
         try:
-            response = requests.get(url, c.headers=HEADERS)
+            response = requests.get(url, headers=c.HEADERS)
             response.raise_for_status()  # 检查请求是否成功
             data = response.json()  # 返回 JSON 数据
             
