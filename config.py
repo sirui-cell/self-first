@@ -21,6 +21,7 @@ wallets_URL = "https://api-bot-v1.dbotx.com/account/wallets"
 SWAP_URL = "https://api-bot-v1.dbotx.com/automation/swap_order"
 
 sumLoss = -2
+fast_pairs_count = 2
 # Telegram Bot details
 BOT_TOKEN = "yourToken"
 CHAT_ID = 7096464619
