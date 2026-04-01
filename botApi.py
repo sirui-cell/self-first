@@ -298,10 +298,7 @@ def add_targetId(targetId):
         'page': 0,
         'size': 20
         }
-    tasks = get_tasks()
-    target_res = []
-    for task in tasks:
-        target_res.extend(task["targetIds"])
+    target_res = get_targetIds()
     if targetId in target_res:
         print(f'{targetId} 已存在，无需添加')
         return 0
@@ -416,7 +413,7 @@ def get_disabled_buy_task_ids(wallet_address, configName):
     try:
         while True:
             response = request_data(
-                    url='https://api-bot-v1.dbotx.com/automation/follow_orders',
+                    url=c.FOLLOW_ORDERS_API_URL,
                     params=params,
                     method="GET"
                 )
@@ -546,7 +543,7 @@ def get_wallets():
 
     while True:        
         response = request_data(
-                url='https://api-bot-v1.dbotx.com/account/wallets',
+                url=c.wallets_URL,
                 params=params,
                 method="GET"
             )
@@ -582,7 +579,7 @@ def get_tasks():
     result = []
     while True:
         response = request_data(
-                url='https://api-bot-v1.dbotx.com/automation/follow_orders',
+                url=c.FOLLOW_ORDERS_API_URL,
                 params=params,
                 method="GET"
             )
@@ -610,8 +607,6 @@ def get_targetIds():
 
 def buy_swap_order(pair,walletId,sol_count):
     """提交交易订单"""
-    url = "https://api-bot-v1.dbotx.com/automation/swap_order"
-
     # 构建请求数据
     data = {
         "chain": "solana",
@@ -634,7 +629,7 @@ def buy_swap_order(pair,walletId,sol_count):
 
     try:
         # 发送 POST 请求
-        response = requests.post(url, headers=HEADERS, json=data)
+        response = requests.post(url=c.SWAP_URL, headers=c.HEADERS, json=data)
         
         if response.status_code == 200:
             print("Swap order submitted successfully.")
@@ -647,8 +642,6 @@ def buy_swap_order(pair,walletId,sol_count):
 
 def sell_swap_order(pair,walletId,percent):
     """提交交易订单"""
-    url = "https://api-bot-v1.dbotx.com/automation/swap_order"
-
     # 构建请求数据
     data = {
         "chain": "solana",
@@ -671,7 +664,7 @@ def sell_swap_order(pair,walletId,percent):
 
     try:
         # 发送 POST 请求
-        response = requests.post(url, headers=HEADERS, json=data)
+        response = requests.post(url=c.SWAP_URL, headers=c.HEADERS, json=data)
         
         if response.status_code == 200:
             print("Swap order submitted successfully.")
