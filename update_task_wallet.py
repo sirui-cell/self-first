@@ -35,7 +35,7 @@ def fetch_tasks(page, size):
         logger.info(f"正在获取第 {page} 页的任务列表，每页 {size} 条")
         response = requests.get(
             c.FOLLOW_ORDERS_API_URL,
-            headers=HEADERS,
+            headers=c.HEADERS,
             params={"page": page, "size": size},
             timeout=10
         )
@@ -59,7 +59,7 @@ def update_task(task, walletA, walletB):
         logger.info(f"正在更新任务 {task.get('name')} 的 walletAddress 为 {walletB}")
         response = requests.post(
             c.EDIT_FOLLOW_ORDER_URL,
-            headers=HEADERS,
+            headers=c.HEADERS,
             json=task,
             timeout=10
         )
